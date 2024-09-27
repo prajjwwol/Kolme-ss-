@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT Web App</title>
+</head>
+<body>
+    <h1>Ask the GPT!</h1>
+    <textarea id="prompt" rows="4" cols="50" placeholder="Enter your question here..."></textarea>
+    <br><br>
+    <button onclick="askGPT()">Submit</button>
+    <h3>Response:</h3>
+    <p id="response"></p>
+
+    <script>
+        async function askGPT() {
+            const prompt = document.getElementById('prompt').value;
+
+            const response = await fetch('http://127.0.0.1:8000/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({prompt: prompt}),
+            });
+            
+            const data = await response.json();
+            document.getElementById('response').innerText = data.response;
+        }
+    </script>
+</body>
+</html>
