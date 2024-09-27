@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Requirement Prioritization</title>
+</head>
+<body>
+    <h1>Enter Requirement Details</h1>
+    <textarea id="requirement" rows="2" cols="50" placeholder="Describe the requirement..."></textarea>
+    <br><br>
+
+    <label for="importance">Stakeholder Importance (1-10):</label>
+    <input type="number" id="importance" name="importance" min="1" max="10"><br><br>
+
+    <label for="complexity">Implementation Complexity (1-10):</label>
+    <input type="number" id="complexity" name="complexity" min="1" max="10"><br><br>
+
+    <label for="business_value">Business Value (1-10):</label>
+    <input type="number" id="business_value" name="business_value" min="1" max="10"><br><br>
+
+    <button onclick="submitRequirement()">Submit Requirement</button>
+    <h3>Prioritization Response:</h3>
+    <p id="response"></p>
+
+    <script>
+        async function submitRequirement() {
+            const requirement = document.getElementById('requirement').value;
+            const importance = document.getElementById('importance').value;
+            const complexity = document.getElementById('complexity').value;
+            const business_value = document.getElementById('business_value').value;
+
+            // Basic validation
+            if (!requirement || !importance || !complexity || !business_value) {
+                document.getElementById('response').innerText = 'Please fill out all fields.';
+                return;
+            }
+
+            try {
+                // Make a POST request to the backend
+                const response = await fetch('/prioritize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        requirement: requirement,
+                        importance: parseInt(importance),
+                        complexity: parseInt(complexity),
+                        business_value: parseInt(business_value),
+                    }),
+                });
+                
+                // Parse the response
+                const data = await response.json();
+
+                // Handle undefined response
+                if (!data.response) {
+                    document.getElementById('response').innerText = 'Error: Could not process the response.';
+                } else {
+                    document.getElementById('response').innerText = data.response;
+                }
+            } catch (error) {
+                // If there’s a network or server error
+                document.getElementById('response').innerText = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
