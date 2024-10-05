@@ -10,10 +10,10 @@ app = FastAPI()
 # Serve static files from the 'static' directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Serve the index.html file when the root URL ("/") is accessed
+# Serve the index.html file at the root URL
 @app.get("/")
 def serve_index():
-    return FileResponse(os.path.join("static", "index.html"))
+    return FileResponse(os.path.join(os.path.abspath("static"), "index.html"))
 
 # Set up Hugging Face Inference API
 # Ensure your HUGGINGFACEHUB_API_TOKEN is set in the environment
