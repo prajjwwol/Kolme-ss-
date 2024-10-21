@@ -39,7 +39,11 @@ async def prioritize_requirement(input_data: RequirementInput):
     Implementation Complexity: {input_data.complexity}/10
     Business Value: {input_data.business_value}/10
 
-    Please analyze and explain whether this requirement should be prioritized in the next release. Provide a detailed explanation, focusing on how these factors influence the prioritization, and feel free to suggest improvements or ask clarifying questions if necessary.
+    Please analyze and explain whether this requirement should be prioritized in the next release. Consider the following:
+    - If complexity is high, should we delay implementation?
+    - If the business value is high but complexity is also high, what challenges should we prepare for?
+    - Explain how the combination of importance, complexity, and business value affects the decision.
+    Provide a detailed explanation with reasoning for your decision.
     """
 
     try:
