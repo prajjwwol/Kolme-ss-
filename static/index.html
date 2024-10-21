@@ -1,71 +1,156 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Software Requirement Prioritization</title>
+    <title>Requirement Prioritization Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .response-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .response-container h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Enter Requirement Details</h1>
-    <textarea id="requirement" rows="2" cols="50" placeholder="Describe the requirement..."></textarea>
-    <br><br>
+
+<div class="container">
+    <h1>Requirement Prioritization Tool</h1>
+
+    <label for="requirement">Enter Requirement:</label>
+    <textarea id="requirement" rows="2" placeholder="Describe the requirement..."></textarea>
 
     <label for="importance">Stakeholder Importance (1-10):</label>
-    <input type="number" id="importance" name="importance" min="1" max="10"><br><br>
+    <input type="number" id="importance" min="1" max="10" placeholder="e.g., 6">
 
     <label for="complexity">Implementation Complexity (1-10):</label>
-    <input type="number" id="complexity" name="complexity" min="1" max="10"><br><br>
+    <input type="number" id="complexity" min="1" max="10" placeholder="e.g., 7">
 
     <label for="business_value">Business Value (1-10):</label>
-    <input type="number" id="business_value" name="business_value" min="1" max="10"><br><br>
+    <input type="number" id="business_value" min="1" max="10" placeholder="e.g., 8">
 
     <button onclick="submitRequirement()">Submit Requirement</button>
-    <h3>Prioritization Response:</h3>
-    <p id="response"></p>
 
-    <script>
-        async function submitRequirement() {
-            const requirement = document.getElementById('requirement').value;
-            const importance = document.getElementById('importance').value;
-            const complexity = document.getElementById('complexity').value;
-            const business_value = document.getElementById('business_value').value;
+    <!-- Response Area -->
+    <div class="response-container" id="response-container" style="display:none;">
+        <h3>Prioritization Response:</h3>
+        <div id="response"></div>
+        <textarea id="reply-message" rows="2" placeholder="Type your response..."></textarea>
+        <button onclick="sendReply()">Send Reply</button>
+    </div>
+</div>
 
-            // Basic validation
-            if (!requirement || !importance || !complexity || !business_value) {
-                document.getElementById('response').innerText = 'Please fill out all fields.';
-                return;
-            }
+<script>
+    async function submitRequirement() {
+        const requirement = document.getElementById('requirement').value;
+        const importance = document.getElementById('importance').value;
+        const complexity = document.getElementById('complexity').value;
+        const business_value = document.getElementById('business_value').value;
 
-            try {
-                // Make a POST request to the backend
-                const response = await fetch('/prioritize', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        requirement: requirement,
-                        importance: parseInt(importance),
-                        complexity: parseInt(complexity),
-                        business_value: parseInt(business_value),
-                    }),
-                });
-                
-                // Parse the response
-                const data = await response.json();
-
-                // Handle undefined response
-                if (!data.response) {
-                    document.getElementById('response').innerText = 'Error: Could not process the response.';
-                } else {
-                    document.getElementById('response').innerText = data.response;
-                }
-            } catch (error) {
-                // If there’s a network or server error
-                document.getElementById('response').innerText = `Error: ${error.message}`;
-            }
+        // Basic validation
+        if (!requirement || !importance || !complexity || !business_value) {
+            alert('Please fill out all fields.');
+            return;
         }
-    </script>
+
+        const responseContainer = document.getElementById('response-container');
+        responseContainer.style.display = 'block';
+
+        try {
+            const response = await fetch('/prioritize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    requirement: requirement,
+                    importance: parseInt(importance),
+                    complexity: parseInt(complexity),
+                    business_value: parseInt(business_value),
+                    history: []  // Include initial history
+                }),
+            });
+
+            const data = await response.json();
+
+            // Display the response from the API
+            document.getElementById('response').innerText = data.response;
+        } catch (error) {
+            document.getElementById('response').innerText = `Error: ${error.message}`;
+        }
+    }
+
+    async function sendReply() {
+        const replyMessage = document.getElementById('reply-message').value;
+
+        if (!replyMessage) {
+            alert('Please enter a reply.');
+            return;
+        }
+
+        // Implement the logic to handle the reply
+        const existingResponse = document.getElementById('response').innerText;
+
+        // Append the reply to the response container
+        document.getElementById('response').innerHTML += `<p><strong>Your Reply:</strong> ${replyMessage}</p>`;
+        // Clear the reply message textarea
+        document.getElementById('reply-message').value = '';
+    }
+</script>
+
 </body>
 </html>
