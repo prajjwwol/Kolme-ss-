@@ -34,7 +34,6 @@
             display: block;
         }
 
-        input[type="text"],
         input[type="number"],
         textarea {
             width: 100%;
@@ -86,14 +85,6 @@
             border: 1px solid #ddd;
             background-color: #fff;
         }
-
-        .chat-message {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            background-color: #f1f1f1;
-        }
     </style>
 </head>
 <body>
@@ -101,19 +92,13 @@
 <div class="container">
     <h1>Requirement Prioritization Tool</h1>
 
-    <label for="requirement">Enter Requirement:</label>
-    <textarea id="requirement" rows="2" placeholder="Describe the requirement..."></textarea>
+    <!-- User inputs the number of priorities -->
+    <label for="num-priorities">Number of Priorities to Analyze:</label>
+    <input type="number" id="num-priorities" min="1" max="10" placeholder="Enter number of priorities" oninput="generatePriorityFields()">
 
-    <label for="importance">Stakeholder Importance (1-10):</label>
-    <input type="number" id="importance" min="1" max="10" placeholder="e.g., 6">
+    <div id="priority-fields"></div>
 
-    <label for="complexity">Implementation Complexity (1-10):</label>
-    <input type="number" id="complexity" min="1" max="10" placeholder="e.g., 7">
-
-    <label for="business_value">Business Value (1-10):</label>
-    <input type="number" id="business_value" min="1" max="10" placeholder="e.g., 8">
-
-    <button onclick="submitRequirement()">Submit Requirement</button>
+    <button onclick="submitPriorities()">Submit Priorities</button>
 
     <!-- Response Area -->
     <div class="response-container" id="response-container" style="display:none;">
@@ -130,16 +115,39 @@
 </div>
 
 <script>
-    async function submitRequirement() {
-        const requirement = document.getElementById('requirement').value;
-        const importance = document.getElementById('importance').value;
-        const complexity = document.getElementById('complexity').value;
-        const business_value = document.getElementById('business_value').value;
+    function generatePriorityFields() {
+        const numPriorities = document.getElementById('num-priorities').value;
+        const container = document.getElementById('priority-fields');
+        container.innerHTML = ''; // Clear previous fields
 
-        // Basic validation
-        if (!requirement || !importance || !complexity || !business_value) {
-            alert('Please fill out all fields.');
-            return;
+        for (let i = 0; i < numPriorities; i++) {
+            container.innerHTML += `
+                <div>
+                    <label for="requirement-${i}">Priority ${i + 1} Requirement:</label>
+                    <textarea id="requirement-${i}" rows="2" placeholder="Describe the requirement..."></textarea>
+
+                    <label for="importance-${i}">Importance (1-10):</label>
+                    <input type="number" id="importance-${i}" min="1" max="10" placeholder="Importance rating">
+                </div>
+                <hr>
+            `;
+        }
+    }
+
+        async function submitPriorities() {
+        const numPriorities = document.getElementById('num-priorities').value;
+        let priorities = [];
+
+        for (let i = 0; i < numPriorities; i++) {
+            const requirement = document.getElementById(`requirement-${i}`).value;
+            const importance = document.getElementById(`importance-${i}`).value;
+
+            if (!requirement || !importance) {
+                alert('Please fill out all fields.');
+                return;
+            }
+
+            priorities.push({ requirement, importance: parseInt(importance) });
         }
 
         const responseContainer = document.getElementById('response-container');
@@ -151,21 +159,17 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    requirement: requirement,
-                    importance: parseInt(importance),
-                    complexity: parseInt(complexity),
-                    business_value: parseInt(business_value),
-                    history: []  // Include initial history
-                }),
+                body: JSON.stringify({ priorities }),
             });
 
             const data = await response.json();
+            console.log(data);  // Add this for debugging in the browser console
             document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
         } catch (error) {
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
     }
+
 
     async function sendFollowUp() {
         const followUpMessage = document.getElementById('followup-message').value;

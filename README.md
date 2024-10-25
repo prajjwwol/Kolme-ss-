@@ -1,41 +1,31 @@
 # Kolme Ässää
-AI agents made to analyze requirements
+AI agents made to analyze and prioritize requirements.
 
-To initialise:
+## Project Overview
+Kolme Ässää is an AI-driven tool designed to assist software consultants in analyzing and prioritizing requirements based on their importance and complexity. Powered by FastAPI and Hugging Face's DialoGPT, this application supports structured requirement submissions, analyses, and follow-up interactions to provide actionable insights for project prioritization.
 
-- pip install fastapi uvicorn huggingface-hub transformers torch
-- uvicorn app:app --reload --host 0.0.0.0 --port 8000
-- http://localhost:8000/static/index.html
+## Setup and Installation
 
-@startuml
-actor User
+### Prerequisites
+- Python 3.8+
+- [Hugging Face API Token](https://huggingface.co/docs/hub/security-tokens) with access to DialoGPT
 
-rectangle Frontend {
-    entity "HTML/JavaScript\nInterface" as UI
-    UI --> Backend : "Submit Requirement\nor Follow-up"
-    Backend --> UI : "Display Response"
-}
+### Installation
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/KolmeAssaa.git
+    cd KolmeAssaa
+    ```
 
-rectangle Backend {
-    control "FastAPI Server" as API
-    API --> LLM : "Process Requirement\nRequest"
-    API --> History : "Store Conversation\nHistory"
-}
+2. Install the dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-rectangle Language_Model {
-    entity "DialoGPT Model\n(Hugging Face API)" as LLM
-    API --> LLM : "Generate\nResponse"
-    LLM --> API : "Send Generated\nResponse"
-}
-
-rectangle "Conversation History" {
-    entity "Stored chat history\nused for context" as History
-    API <--> History : "Maintain history\nfor conversational context"
-}
-
-User --> UI : "Enter Requirements\nor Follow-up"
-UI --> API : "Request (JSON)"
-API --> UI : "Response (JSON)"
-
-@enduml
-
+3. Set up environment variables:
+   Ensure your Hugging Face API token is available by setting it as an environment variable:
+   ```bash
+   export HUGGING=<your_huggingface_api_token>
+   
+4. Start the application
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
