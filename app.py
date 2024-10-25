@@ -3,8 +3,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List
-from huggingface_hub import InferenceClient
-import os
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 import logging
 
 # Configure logging
@@ -13,31 +13,31 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI()
-
-# Serve static files (like HTML) from 'static' directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Set up Hugging Face Inference Client for EleutherAI/gpt-neo-2.7B model
-huggingface_api_token = os.getenv("HUGGING")
-if not huggingface_api_token:
-    raise ValueError("Environment variable 'HUGGING' is missing.")
-hf_client = InferenceClient(model="EleutherAI/gpt-neo-2.7B", token=huggingface_api_token)
+# Load GPT-J-6B with memory-efficient settings
+model_name = "EleutherAI/gpt-j-6B"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16,  # Use float16 for lower memory usage
+    device_map="auto"           # Spread model across available devices
+)
 
-# Define PriorityInput class for individual priority input
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
+
 class PriorityInput(BaseModel):
     requirement: str
     importance: int
 
-# Define the input model for prioritization requests
 class PrioritizationRequest(BaseModel):
     priorities: List[PriorityInput]
 
-# Define the input model for follow-up requests
 class FollowUpInput(BaseModel):
     follow_up: str
     history: List[str]
 
-# Route to serve the HTML file at the root URL
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
@@ -47,72 +47,64 @@ async def read_root():
         logger.error("index.html not found in static directory.")
         raise HTTPException(status_code=404, detail="index.html not found in static directory.")
 
-# Route to handle the requirement prioritization
 @app.post("/prioritize")
 async def prioritize_request(input_data: PrioritizationRequest):
     priorities = input_data.priorities
-
-    # Refined prompt with guiding example to help the model focus on structured output
     prompt = (
-        "You are a software consultant providing prioritization analysis. For each requirement, "
-        "give a one-sentence summary of complexity and business value. List requirements in order of importance.\n"
-        "Example output:\n"
-        "Requirement: User Registration - Complexity: Medium, Business Value: High.\n\n"
+        "You are a software consultant. Please analyze the following requirements:\n"
+        "- For each, provide:\n  - Complexity: Low, Medium, or High\n  - Business Value: Low, Medium, or High\n"
+        "Requirements:\n"
     )
     for priority in priorities:
-        prompt += f"Requirement: {priority.requirement}, rated {priority.importance}/10 in importance.\n"
-
-    prompt += "End of requirements. Provide concise analysis as shown in the example."
+        prompt += f"- {priority.requirement} (Importance: {priority.importance}/10)\n"
+    prompt += "Provide your analysis of each requirement."
 
     try:
-        # Send prompt to the model with controlled generation settings
-        response = hf_client.text_generation(
-            prompt,
-            max_new_tokens=75,  # Reduced max tokens for concise output
-            temperature=0.7,     # Controlled randomness
-            top_p=0.9            # Focus on high-likelihood outputs
+        logger.info(f"Prompt to model: {prompt}")
+        inputs = tokenizer(prompt, return_tensors="pt", padding=True)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+        outputs = model.generate(
+            inputs["input_ids"], 
+            attention_mask=inputs["attention_mask"],
+            max_new_tokens=100,
+            temperature=0.7,
+            top_p=0.9,
+            do_sample=True,
+            pad_token_id=tokenizer.eos_token_id
         )
-        logger.info(f"Raw response from LLM: {response}")
-
-        # Process the response and handle irrelevant output with a fallback
-        generated_text = response.strip() if isinstance(response, str) else response.get('generated_text', '').strip()
-        
-        # Check for irrelevant responses and handle them gracefully
-        if not generated_text or "website" in generated_text.lower():
-            return {"response": "The model could not produce a relevant prioritization. Try rephrasing the requirements or consider a model upgrade."}
-
+        logger.info("Model generation completed.")
+        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        logger.info(f"Response: {generated_text}")
         return {"response": generated_text}
 
     except Exception as e:
         logger.error(f"Error in prioritize_request: {str(e)}")
         return {"response": "An error occurred while processing your request. Please try again later."}
 
-# Route to handle follow-up questions
 @app.post("/followup")
 async def handle_followup(input_data: FollowUpInput):
     conversation_history = "\n".join(input_data.history)
     followup_prompt = (
         f"You are a helpful assistant. Here's a follow-up question: '{input_data.follow_up}'.\n"
-        f"Here is the conversation history so far:\n{conversation_history}\n"
-        "Please provide additional insights."
+        f"Conversation history:\n{conversation_history}\nPlease provide insights."
     )
 
     try:
-        # Send follow-up prompt to the LLM with controlled generation length
-        response = hf_client.text_generation(
-            followup_prompt,
-            max_new_tokens=250,
-            temperature=0.7,
-            top_p=0.9
+        logger.info(f"Follow-up prompt to model: {followup_prompt}")
+        inputs = tokenizer(followup_prompt, return_tensors="pt", padding=True)
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+        outputs = model.generate(
+            inputs["input_ids"], 
+            attention_mask=inputs["attention_mask"],
+            max_new_tokens=150,
+            temperature=0.7, 
+            top_p=0.9,
+            do_sample=True
         )
-        logger.info(f"Raw response from LLM: {response}")
-
-        # Handle empty or irrelevant responses with a fallback
-        generated_text = response.strip() if isinstance(response, str) else response.get('generated_text', '').strip()
-        if not generated_text or "website" in generated_text.lower():
-            return {"response": "No follow-up response was generated. Please try again later."}
-
-        # Append the model's response to conversation history
+        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        logger.info(f"Response: {generated_text}")
         input_data.history.append(f"AI: {generated_text}")
         return {"response": generated_text, "history": input_data.history}
 
