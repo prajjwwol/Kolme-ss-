@@ -85,6 +85,15 @@
             border: 1px solid #ddd;
             background-color: #fff;
         }
+
+        /* Loading indicator styling */
+        .loading {
+            display: none;
+            font-style: italic;
+            color: #888;
+            text-align: center;
+            padding: 15px;
+        }
     </style>
 </head>
 <body>
@@ -99,6 +108,9 @@
     <div id="priority-fields"></div>
 
     <button onclick="submitPriorities()">Submit Priorities</button>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loading-indicator">Processing your request, please wait...</div>
 
     <!-- Response Area -->
     <div class="response-container" id="response-container" style="display:none;">
@@ -134,7 +146,11 @@
         }
     }
 
-        async function submitPriorities() {
+    function showLoading(show) {
+        document.getElementById('loading-indicator').style.display = show ? 'block' : 'none';
+    }
+
+    async function submitPriorities() {
         const numPriorities = document.getElementById('num-priorities').value;
         let priorities = [];
 
@@ -151,7 +167,9 @@
         }
 
         const responseContainer = document.getElementById('response-container');
-        responseContainer.style.display = 'block';
+        responseContainer.style.display = 'none';
+
+        showLoading(true);  // Show loading indicator
 
         try {
             const response = await fetch('/prioritize', {
@@ -163,13 +181,18 @@
             });
 
             const data = await response.json();
-            console.log(data);  // Add this for debugging in the browser console
+            showLoading(false);  // Hide loading indicator
+            responseContainer.style.display = 'block';
+
+            // Log the raw response to the console for debugging
+            console.log("Response from /prioritize:", data);
+
             document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
         } catch (error) {
+            showLoading(false);  // Hide loading indicator
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
     }
-
 
     async function sendFollowUp() {
         const followUpMessage = document.getElementById('followup-message').value;
@@ -178,6 +201,8 @@
             alert('Please enter a follow-up message.');
             return;
         }
+
+        showLoading(true);  // Show loading indicator
 
         try {
             const response = await fetch('/followup', {
@@ -192,8 +217,14 @@
             });
 
             const data = await response.json();
+            showLoading(false);  // Hide loading indicator
+
+            // Log the raw response to the console for debugging
+            console.log("Response from /followup:", data);
+
             document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
         } catch (error) {
+            showLoading(false);  // Hide loading indicator
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
     }
