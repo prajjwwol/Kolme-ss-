@@ -5,65 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Requirement Prioritization Tool</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            font-size: 24px;
-            color: #333;
-            text-align: center;
-        }
-        label {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 8px;
-            display: block;
-        }
-        input[type="text"],
-        input[type="number"],
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .response-container {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .response-container h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
+        /* Basic styles */
     </style>
 </head>
 <body>
@@ -85,12 +27,15 @@
 
     <button onclick="submitRequirement()">Submit Requirement</button>
 
-    <!-- Response Area -->
     <div class="response-container" id="response-container" style="display:none;">
         <h3>Prioritization Response:</h3>
         <div id="response"></div>
-        <textarea id="reply-message" rows="2" placeholder="Type your response..."></textarea>
-        <button onclick="sendReply()">Send Reply</button>
+    </div>
+
+    <div class="chat-container">
+        <h3>Send a Follow-Up</h3>
+        <textarea id="followup-message" rows="2" placeholder="Type your message..."></textarea>
+        <button onclick="sendFollowUp()">Send</button>
     </div>
 </div>
 
@@ -101,14 +46,10 @@
         const complexity = document.getElementById('complexity').value;
         const business_value = document.getElementById('business_value').value;
 
-        // Basic validation
         if (!requirement || !importance || !complexity || !business_value) {
             alert('Please fill out all fields.');
             return;
         }
-
-        const responseContainer = document.getElementById('response-container');
-        responseContainer.style.display = 'block';
 
         try {
             const response = await fetch('/prioritize', {
@@ -121,34 +62,44 @@
                     importance: parseInt(importance),
                     complexity: parseInt(complexity),
                     business_value: parseInt(business_value),
-                    history: []  // Include initial history
+                    history: []
                 }),
             });
 
             const data = await response.json();
-
-            // Display the response from the API
-            document.getElementById('response').innerText = data.response;
+            document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
+            document.getElementById('response-container').style.display = 'block';
+            console.log("Server Response:", data.response);
         } catch (error) {
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
     }
 
-    async function sendReply() {
-        const replyMessage = document.getElementById('reply-message').value;
-
-        if (!replyMessage) {
-            alert('Please enter a reply.');
+    async function sendFollowUp() {
+        const followUpMessage = document.getElementById('followup-message').value;
+        if (!followUpMessage) {
+            alert('Please enter a follow-up message.');
             return;
         }
 
-        // Implement the logic to handle the reply
-        const existingResponse = document.getElementById('response').innerText;
+        try {
+            const response = await fetch('/followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    follow_up: followUpMessage,
+                    history: []
+                }),
+            });
 
-        // Append the reply to the response container
-        document.getElementById('response').innerHTML += `<p><strong>Your Reply:</strong> ${replyMessage}</p>`;
-        // Clear the reply message textarea
-        document.getElementById('reply-message').value = '';
+            const data = await response.json();
+            document.getElementById('response').innerHTML += `<p>${data.response}</p>`;
+            console.log("Follow-Up Response:", data.response);
+        } catch (error) {
+            document.getElementById('response').innerText = `Error: ${error.message}`;
+        }
     }
 </script>
 
