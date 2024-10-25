@@ -5,7 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Requirement Prioritization Tool</title>
     <style>
-        /* Basic styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #333;
+            text-align: center;
+        }
+
+        label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .response-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .response-container h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .response-container p {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .chat-container {
+            margin-top: 40px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+        }
+
+        .chat-message {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
 <body>
@@ -27,11 +115,13 @@
 
     <button onclick="submitRequirement()">Submit Requirement</button>
 
+    <!-- Response Area -->
     <div class="response-container" id="response-container" style="display:none;">
         <h3>Prioritization Response:</h3>
         <div id="response"></div>
     </div>
 
+    <!-- Chat Section for Follow-Up -->
     <div class="chat-container">
         <h3>Send a Follow-Up</h3>
         <textarea id="followup-message" rows="2" placeholder="Type your message..."></textarea>
@@ -46,10 +136,14 @@
         const complexity = document.getElementById('complexity').value;
         const business_value = document.getElementById('business_value').value;
 
+        // Basic validation
         if (!requirement || !importance || !complexity || !business_value) {
             alert('Please fill out all fields.');
             return;
         }
+
+        const responseContainer = document.getElementById('response-container');
+        responseContainer.style.display = 'block';
 
         try {
             const response = await fetch('/prioritize', {
@@ -62,14 +156,12 @@
                     importance: parseInt(importance),
                     complexity: parseInt(complexity),
                     business_value: parseInt(business_value),
-                    history: []
+                    history: []  // Include initial history
                 }),
             });
 
             const data = await response.json();
             document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
-            document.getElementById('response-container').style.display = 'block';
-            console.log("Server Response:", data.response);
         } catch (error) {
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
@@ -77,6 +169,7 @@
 
     async function sendFollowUp() {
         const followUpMessage = document.getElementById('followup-message').value;
+
         if (!followUpMessage) {
             alert('Please enter a follow-up message.');
             return;
@@ -90,13 +183,12 @@
                 },
                 body: JSON.stringify({
                     follow_up: followUpMessage,
-                    history: []
+                    history: []  // Include previous chat messages if needed
                 }),
             });
 
             const data = await response.json();
-            document.getElementById('response').innerHTML += `<p>${data.response}</p>`;
-            console.log("Follow-Up Response:", data.response);
+            document.getElementById('response').innerHTML = `<p>${data.response}</p>`;
         } catch (error) {
             document.getElementById('response').innerText = `Error: ${error.message}`;
         }
