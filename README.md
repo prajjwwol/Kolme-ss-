@@ -29,3 +29,13 @@ Kolme Ässää is an AI-driven tool designed to assist software consultants in a
    
 4. Start the application
 uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+
+Notes:
+Create Pythin Virtual Env
+ - C:\Python311\python.exe -m venv env
+Activate the Virtual Env
+ - env\Scripts\activate
+Install requirements
+ -pip install -r requirements.txt
+
