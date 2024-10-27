@@ -39,3 +39,10 @@ Activate the Virtual Env
 Install requirements
  -pip install -r requirements.txt
 
+ Deletes Cache from Virtual Env
+ -rmdir /S /Q %USERPROFILE%\.cache\huggingface
+
+ Run APP:
+ uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+
