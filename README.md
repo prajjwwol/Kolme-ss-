@@ -37,12 +37,12 @@ Create Pythin Virtual Env
 Activate the Virtual Env
  - env\Scripts\activate
 Install requirements
- -pip install -r requirements.txt
+ - pip install -r requirements.txt
 
  Deletes Cache from Virtual Env
- -rmdir /S /Q %USERPROFILE%\.cache\huggingface
+ - rmdir /S /Q %USERPROFILE%\.cache\huggingface
 
  Run APP:
- uvicorn app:app --reload --host 0.0.0.0 --port 8000
+ - uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 
