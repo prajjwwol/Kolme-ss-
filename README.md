@@ -32,17 +32,24 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 
 Notes:
-Create Pythin Virtual Env
+
+5. Create Pythin Virtual Env
  - C:\Python311\python.exe -m venv env
-Activate the Virtual Env
+
+6. Activate the Virtual Env
  - env\Scripts\activate
-Install requirements
+
+7. Install requirements
  - pip install -r requirements.txt
 
- Deletes Cache from Virtual Env
+8. Deletes Cache from Virtual Env
  - rmdir /S /Q %USERPROFILE%\.cache\huggingface
 
- Run APP:
+9. Run APP:
  - uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
+10. Acces UI ( FastAPI)
+ - http://127.0.0.1:8000/
+ - http://localhost:8000/
+ 
 
