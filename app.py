@@ -20,9 +20,12 @@ model_name = "EleutherAI/gpt-j-6B"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
-    torch_dtype=torch.float16,  # Use float16 for lower memory usage
-    device_map="auto"           # Spread model across available devices
+    device_map="auto",
+    offload_folder="./offload"  
 )
+
+
+
 
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
