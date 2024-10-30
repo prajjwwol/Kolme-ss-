@@ -31,7 +31,7 @@ cd requirements-prioritizer
 
 ### 2. Create a Virtual Environment and Install Dependencies
     - python -m venv venv
-    - source venv/bin/activate  # For Windows use: venv\Scripts\activate
+    - venv\Scripts\activate
 
 ### 3. install requirements
     - pip install -r requirements.txt
