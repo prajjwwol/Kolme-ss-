@@ -26,8 +26,6 @@ The **Requirements Prioritizer** is an AI-driven application designed to help so
 Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/requirements-prioritizer.git
-cd requirements-prioritizer
 
 ### 2. Create a Virtual Environment and Install Dependencies
     - python -m venv venv
