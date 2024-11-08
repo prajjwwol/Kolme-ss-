@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+__pycache__
+models\__pycache__
+
+# VS Code settings (optional, if using VS Code)
+.vscode/
+
+# Pytest and coverage
+.cache/
+coverage/
+.tox/
+.nox/
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS and Linux specific files
+.DS_Store
+.idea/
+Thumbs.db
+models\__pycache__
+
+# Ignore Python cache directories and compiled files
+__pycache__/
+*.pyc
+
