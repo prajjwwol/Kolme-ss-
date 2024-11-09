@@ -1,27 +1,140 @@
-/* static/style.css */
+/* General Layout */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #252545);
+    color: #d0d0e1;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* Container Styling */
+.container {
+    text-align: center;
+    width: 90%;
+    max-width: 1200px;
+    padding: 30px;
+    background-color: #1a1a2e;
+    border-radius: 15px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* Typography */
 h1 {
-    color: #333;
+    color: #29abe2;
+    font-size: 2em;
+    font-weight: 700;
 }
 
 textarea {
-    width: 100%;
-    margin-bottom: 10px;
+    width: 90%;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 8px;
+    border: 2px solid #29abe2;
+    background-color: #252545;
+    color: #ffffff;
+    resize: none;
 }
 
+/* Buttons */
 button {
     padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
+    background-color: #29abe2;
+    color: #ffffff;
     border: none;
+    border-radius: 5px;
     cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
-#results {
-    margin-top: 20px;
+button:hover {
+    background-color: #1e8bbf;
+    transform: scale(1.05);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Modal Container */
+.modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1e1e2e;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 1100;
+    display: none;
+}
+
+.modal-container.show, .modal-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Results Section */
+.results-container ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.results-container li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #252545;
+    color: #d0d0e1;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Collapsible Results */
+.results-container li:hover {
+    background-color: #333355;
+}
+
+.results-container li .details {
+    display: none;
+    font-size: 0.9em;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #29abe2;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 0.8s linear infinite;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1200;
+    display: none;
+}
+
+.loading-spinner.show {
+    display: block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
