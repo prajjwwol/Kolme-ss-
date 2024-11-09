@@ -1,5 +1,7 @@
 # utils/prioritization.py
-from models.huggingface_model import analyze_with_flan
+
+# utils/prioritization.py
+from models.huggingface_model import analyze_with_model
 
 def prioritize_requirements(requirements, responses):
     results = []
@@ -7,8 +9,8 @@ def prioritize_requirements(requirements, responses):
     prioritized_explanations = []
 
     for req in requirements:
-        # Call the API-based flan-t5-xxl model to get prioritization details
-        explanation = analyze_with_flan(req)
+        # Call the model to analyze the requirement
+        explanation = analyze_with_model(req)  # Ensure this matches the function in huggingface_model.py
 
         # Retrieve user-provided factors with defaults if not specified
         factors = responses.get(req, {})
@@ -17,10 +19,10 @@ def prioritize_requirements(requirements, responses):
         urgency = float(factors.get("urgency", 3))
         clarification = factors.get("clarification", "")
 
-        # Mock weighted score for demonstration purposes
+        # Calculate a weighted score
         weighted_score = (importance + urgency - complexity) / 3
 
-        # Append any clarification if provided
+        # Append clarification to explanation if provided
         if clarification:
             explanation += f"\nNote: Clarification provided - '{clarification}'"
 
@@ -33,11 +35,25 @@ def prioritize_requirements(requirements, responses):
     # Sort requirements by weighted score in descending order
     prioritized_requirements = sorted(results, key=lambda x: x['score'], reverse=True)
 
+    # Generate comparative explanations if multiple requirements are prioritized
     if len(prioritized_requirements) > 1:
         comparative_text = generate_comparative_text(prioritized_requirements)
         prioritized_explanations.append(comparative_text)
 
     return prioritized_requirements, information_requests, prioritized_explanations
+
+def generate_comparative_text(prioritized_requirements):
+    top_priority = prioritized_requirements[0]
+    lower_priority = prioritized_requirements[-1]
+
+    comparative_text = (
+        f"Comparatively, '{top_priority['requirement']}' is prioritized over '{lower_priority['requirement']}' "
+        f"due to its higher importance and urgency scores. Specifically, '{top_priority['requirement']}' "
+        f"has a higher score, indicating it aligns closely with core project goals, whereas '{lower_priority['requirement']}' "
+        f"has a lower importance rating, suggesting it may be less essential initially or could be deferred."
+    )
+    return comparative_text
+
 
 
 def generate_explanation(req, importance, complexity, urgency, score):
@@ -80,22 +96,3 @@ def generate_explanation(req, importance, complexity, urgency, score):
 
     return explanation
 
-
-
-def generate_comparative_text(prioritized_requirements):
-    top_priority = prioritized_requirements[0]
-    lower_priority = prioritized_requirements[-1]
-
-    comparative_text = (
-        f"Comparatively, '{top_priority['requirement']}' is prioritized over '{lower_priority['requirement']}' "
-        f"due to its higher importance and urgency scores. Specifically, '{top_priority['requirement']}' "
-        f"has an importance rating of {top_priority['score']:.2f}, indicating it aligns closely with core project goals. "
-        f"Meanwhile, '{lower_priority['requirement']}' has a lower importance rating, suggesting it may be "
-        f"less essential in the initial project stages or could be deferred.\n"
-        
-        f"The complexity of '{lower_priority['requirement']}' also plays a role in its lower priority. Higher complexity "
-        f"indicates more effort and resources needed, which could affect the project timeline. This comparative analysis "
-        f"highlights how importance, complexity, and urgency collectively influence prioritization, with higher-ranked items "
-        f"having stronger alignment in these factors."
-    )
-    return comparative_text

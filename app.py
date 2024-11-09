@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, request, jsonify, render_template
-from models.huggingface_model import analyze_with_flan
+from models.huggingface_model import analyze_with_model
 from utils.prioritization import prioritize_requirements
 
 app = Flask(__name__)

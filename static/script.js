@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Open the modal overlay for input
+    // Opens the modal overlay for input
     function openModal() {
         const modalOverlay = document.getElementById("modal-overlay");
         const questionModal = document.getElementById("question-modal");
