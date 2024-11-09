@@ -14,20 +14,20 @@
             <button type="button" onclick="submitRequirements()">Start Prioritization</button>
         </form>
         <div id="results" class="results-container"></div>
+        <div id="additional-info" class="additional-info-container"></div>
     </div>
 
     <!-- Modal Overlay for background dimming -->
-    <div class="modal-overlay hidden" id="modal-overlay"></div>
-
-    <!-- Modal Container for asking ratings and clarifications -->
-    <div class="modal-container hidden" id="question-modal">
-        <h3 id="modal-question">Question for: Requirement</h3>
-        <label>Importance (1-5):<input type="number" id="importance" min="1" max="5" placeholder="3"></label>
-        <label>Complexity (1-5):<input type="number" id="complexity" min="1" max="5" placeholder="3"></label>
-        <label>Urgency (1-5):<input type="number" id="urgency" min="1" max="5" placeholder="3"></label>
-        <div class="modal-buttons">
-            <button class="submit-answer" onclick="submitAnswer()">Submit Answer</button>
-            <button class="close-modal" onclick="closeModal()">Close</button>
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-container" id="question-modal">
+            <h3 id="modal-question">Question for: Requirement</h3>
+            <label>Importance (1-5):<input type="number" id="importance" min="1" max="5" placeholder="3"></label>
+            <label>Complexity (1-5):<input type="number" id="complexity" min="1" max="5" placeholder="3"></label>
+            <label>Urgency (1-5):<input type="number" id="urgency" min="1" max="5" placeholder="3"></label>
+            <div class="modal-buttons">
+                <button onclick="submitAnswer()">Submit Answer</button>
+                <button onclick="closeModal()">Close</button>
+            </div>
         </div>
     </div>
 

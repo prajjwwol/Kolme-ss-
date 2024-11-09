@@ -1,7 +1,5 @@
 # utils/prioritization.py
-from models.huggingface_model import load_huggingface_model
-
-classifier = load_huggingface_model()
+from models.huggingface_model import analyze_with_flan
 
 def prioritize_requirements(requirements, responses):
     results = []
@@ -9,37 +7,22 @@ def prioritize_requirements(requirements, responses):
     prioritized_explanations = []
 
     for req in requirements:
-        priority_score = classifier(req)[0]['score']
+        # Call the API-based flan-t5-xxl model to get prioritization details
+        explanation = analyze_with_flan(req)
 
-        # Retrieve the user-specified factors
+        # Retrieve user-provided factors with defaults if not specified
         factors = responses.get(req, {})
-        importance = float(factors.get('importance', 3))
-        complexity = float(factors.get('complexity', 3))
-        urgency = float(factors.get('urgency', 3))
-        clarification = factors.get('clarification', '')
+        importance = float(factors.get("importance", 3))
+        complexity = float(factors.get("complexity", 3))
+        urgency = float(factors.get("urgency", 3))
+        clarification = factors.get("clarification", "")
 
-        # Adjust scores or explanation based on clarification if provided
+        # Mock weighted score for demonstration purposes
+        weighted_score = (importance + urgency - complexity) / 3
+
+        # Append any clarification if provided
         if clarification:
-            priority_score += 0.1  # Example adjustment: boost score slightly if clarification enhances requirement relevance
-            clarification_note = f"Note: Clarification provided - '{clarification}'"
-        else:
-            clarification_note = ""
-
-        # Calculate weighted score
-        weighted_score = (
-            priority_score * importance / 5 +
-            (1 - complexity / 5) +
-            urgency / 5
-        ) / 3
-
-        # Generate explanation
-        explanation = generate_explanation(req, importance, complexity, urgency, weighted_score)
-        if clarification:
-            explanation += f"\n{clarification_note}"
-
-        # Check if additional information might still be needed
-        if weighted_score < 0.5 and not clarification:
-            information_requests.append(f"We need more information on '{req}' to better assess its priority. Could you clarify its impact?")
+            explanation += f"\nNote: Clarification provided - '{clarification}'"
 
         results.append({
             'requirement': req,
@@ -50,12 +33,12 @@ def prioritize_requirements(requirements, responses):
     # Sort requirements by weighted score in descending order
     prioritized_requirements = sorted(results, key=lambda x: x['score'], reverse=True)
 
-    # Add comparative explanation
     if len(prioritized_requirements) > 1:
         comparative_text = generate_comparative_text(prioritized_requirements)
         prioritized_explanations.append(comparative_text)
 
     return prioritized_requirements, information_requests, prioritized_explanations
+
 
 def generate_explanation(req, importance, complexity, urgency, score):
     explanation = f"'{req}' has a score of {score:.2f} based on the following factors:\n"
@@ -96,6 +79,8 @@ def generate_explanation(req, importance, complexity, urgency, score):
         explanation += "\nThis requirement has a lower priority and could be revisited based on further project developments."
 
     return explanation
+
+
 
 def generate_comparative_text(prioritized_requirements):
     top_priority = prioritized_requirements[0]
