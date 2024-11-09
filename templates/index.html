@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,114 +6,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Requirements Prioritizer</h1>
-    <form id="requirements-form">
-        <label for="requirements">Enter Requirements (one per line):</label>
-        <textarea id="requirements" rows="5" placeholder="Requirement 1\nRequirement 2"></textarea>
-        <button type="button" onclick="submitRequirements()">Start Prioritization</button>
-    </form>
-    
-    <div id="questions"></div>
-    <div id="results"></div>
+    <div class="container">
+        <h1>Requirements Prioritizer</h1>
+        <form id="requirements-form">
+            <label for="requirements">Enter Requirements (one per line):</label>
+            <textarea id="requirements" rows="5" placeholder="Requirement 1&#10;Requirement 2"></textarea>
+            <button type="button" onclick="submitRequirements()">Start Prioritization</button>
+        </form>
+        <div id="results" class="results-container"></div>
+    </div>
 
-    <script>
-        let requirements = [];
-        let currentRequirementIndex = 0;
-        let responses = {};
+    <!-- Modal Overlay for background dimming -->
+    <div class="modal-overlay hidden" id="modal-overlay"></div>
 
-        async function submitRequirements() {
-            requirements = document.getElementById("requirements").value.split("\n");
-            currentRequirementIndex = 0;
-            responses = {};
-            askNextQuestion();
-        }
+    <!-- Modal Container for asking ratings and clarifications -->
+    <div class="modal-container hidden" id="question-modal">
+        <h3 id="modal-question">Question for: Requirement</h3>
+        <label>Importance (1-5):<input type="number" id="importance" min="1" max="5" placeholder="3"></label>
+        <label>Complexity (1-5):<input type="number" id="complexity" min="1" max="5" placeholder="3"></label>
+        <label>Urgency (1-5):<input type="number" id="urgency" min="1" max="5" placeholder="3"></label>
+        <div class="modal-buttons">
+            <button class="submit-answer" onclick="submitAnswer()">Submit Answer</button>
+            <button class="close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
 
-        function askNextQuestion() {
-            if (currentRequirementIndex < requirements.length) {
-                const requirement = requirements[currentRequirementIndex];
-                document.getElementById("questions").innerHTML = `
-                    <h3>Question for: ${requirement}</h3>
-                    <label>Importance (1-5):</label><input type="number" id="importance" min="1" max="5" placeholder="3"><br>
-                    <label>Complexity (1-5):</label><input type="number" id="complexity" min="1" max="5" placeholder="3"><br>
-                    <label>Urgency (1-5):</label><input type="number" id="urgency" min="1" max="5" placeholder="3"><br>
-                    <button type="button" onclick="submitAnswer()">Submit Answer</button>
-                `;
-            } else {
-                finalizePrioritization();
-            }
-        }
-
-        function submitAnswer() {
-            const importance = document.getElementById("importance").value || 3;
-            const complexity = document.getElementById("complexity").value || 3;
-            const urgency = document.getElementById("urgency").value || 3;
-            responses[requirements[currentRequirementIndex]] = { importance, complexity, urgency };
-            currentRequirementIndex++;
-            askNextQuestion();
-        }
-
-        async function finalizePrioritization() {
-            const response = await fetch('/prioritize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requirements, responses })
-            });
-            const result = await response.json();
-
-            // Display prioritized requirements with explanations
-            let output = "<h3>Prioritized Requirements:</h3><ul>";
-            result.prioritized.forEach(({ requirement, score, explanation }) => {
-                output += `<li>${requirement} - Score: ${score.toFixed(2)}<br>${explanation}</li>`;
-            });
-            output += "</ul>";
-            document.getElementById("results").innerHTML = output;
-
-            // Display comparative explanation
-            if (result.prioritized_explanations.length > 0) {
-                document.getElementById("results").innerHTML += `<p><strong>${result.prioritized_explanations[0]}</strong></p>`;
-            }
-
-            // Display information requests if any
-            if (result.information_requests.length > 0) {
-                let requestsOutput = "<h3>Additional Information Needed:</h3><ul>";
-                result.information_requests.forEach((request, index) => {
-                    requestsOutput += `
-                        <li>${request}<br>
-                        <input type="text" id="clarification${index}" placeholder="Provide clarification">
-                        <button onclick="submitClarification(${index}, '${requirements[index]}')">Submit Clarification</button>
-                        </li>
-                    `;
-                });
-                requestsOutput += "</ul>";
-                document.getElementById("results").innerHTML += requestsOutput;
-            }
-
-            document.getElementById("questions").innerHTML = "";
-        }
-
-        async function submitClarification(index, requirement) {
-            const clarification = document.getElementById(`clarification${index}`).value;
-            responses[requirement] = { ...responses[requirement], clarification };
-            
-            const response = await fetch('/prioritize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ requirements, responses })
-            });
-            const result = await response.json();
-            
-            // Display updated prioritized requirements with explanations after clarification
-            let output = "<h3>Updated Prioritized Requirements:</h3><ul>";
-            result.prioritized.forEach(({ requirement, score, explanation }) => {
-                output += `<li>${requirement} - Score: ${score.toFixed(2)}<br>${explanation}</li>`;
-            });
-            output += "</ul>";
-            document.getElementById("results").innerHTML = output;
-
-            // Clear the clarification section
-            document.getElementById(`clarification${index}`).value = '';
-            document.getElementById("questions").innerHTML = "";
-        }
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
